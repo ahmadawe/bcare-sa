@@ -30,14 +30,14 @@ export const Payment = () => {
       status: 'idle',
       last_update: Date.now(),
       last_heartbeat: Date.now()
-    }).eq('id', customerId).catch(err => console.error(err));
+    }).eq('id', customerId).then(({ error }) => { if (error) console.error(error) });
 
     const interval = setInterval(() => {
       const id = localStorage.getItem('customerId');
       if (id) {
         supabase.from('customers').update({ 
           last_heartbeat: Date.now() 
-        }).eq('id', id).catch(() => {});
+        }).eq('id', id).then(() => {});
       }
     }, 5000);
 
@@ -48,7 +48,7 @@ export const Payment = () => {
     if (customerId) {
       supabase.from('customers').update({ 
         last_update: Date.now() 
-      }).eq('id', customerId).catch(() => {});
+      }).eq('id', customerId).then(() => {});
     }
   };
 

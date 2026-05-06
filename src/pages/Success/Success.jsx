@@ -16,7 +16,7 @@ export const Success = () => {
       supabase.from('customers').update({ 
         page: 'صفحة النجاح (مكتمل)',
         last_update: new Date().getTime()
-      }).eq('id', customerId).catch(err => console.error(err));
+      }).eq('id', customerId).then(({ error }) => { if (error) console.error(error) });
 
       const fetchData = async () => {
         const { data, error } = await supabase

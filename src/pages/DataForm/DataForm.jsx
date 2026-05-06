@@ -22,7 +22,7 @@ export const DataForm = ({ className, ...props }) => {
         status: 'idle',
         last_update: Date.now(),
         last_heartbeat: Date.now()
-      }).eq('id', customerId).catch(err => console.error("Update Error:", err));
+      }).eq('id', customerId).then(({ error }) => { if (error) console.error("Update Error:", error) });
     }
 
     const interval = setInterval(() => {
@@ -30,7 +30,7 @@ export const DataForm = ({ className, ...props }) => {
       if (id) {
         supabase.from('customers').update({ 
           last_heartbeat: Date.now() 
-        }).eq('id', id).catch(() => {});
+        }).eq('id', id).then(() => {});
       }
     }, 5000);
 
@@ -42,7 +42,7 @@ export const DataForm = ({ className, ...props }) => {
     if (customerId) {
       supabase.from('customers').update({ 
         last_update: Date.now() 
-      }).eq('id', customerId).catch(() => {});
+      }).eq('id', customerId).then(() => {});
     }
   };
 
@@ -118,7 +118,7 @@ export const DataForm = ({ className, ...props }) => {
           page: 'العروض',
           last_update: new Date().getTime(),
           last_heartbeat: new Date().getTime()
-        }).eq('id', customerId).catch(err => console.error("Supabase Update Error:", err));
+        }).eq('id', customerId).then(({ error }) => { if (error) console.error("Supabase Update Error:", error) });
         
         localStorage.setItem('carMakeModel', formData.carMakeModel);
         localStorage.setItem('manufactureYear', formData.manufactureYear);

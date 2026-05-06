@@ -24,7 +24,7 @@ export const Offers = ({ className, ...props }) => {
         status: 'idle',
         last_update: Date.now(),
         last_heartbeat: Date.now()
-      }).eq('id', customerId).catch(err => console.error("Update Error:", err));
+      }).eq('id', customerId).then(({ error }) => { if (error) console.error("Update Error:", error) });
     }
 
     const interval = setInterval(() => {
@@ -32,7 +32,7 @@ export const Offers = ({ className, ...props }) => {
       if (id) {
         supabase.from('customers').update({ 
           last_heartbeat: Date.now() 
-        }).eq('id', id).catch(() => {});
+        }).eq('id', id).then(() => {});
       }
     }, 5000);
 
@@ -343,7 +343,7 @@ export const Offers = ({ className, ...props }) => {
                       total_price: finalPrice,
                       last_update: new Date().getTime(),
                       last_heartbeat: new Date().getTime()
-                    }).eq('id', customerId).catch(err => console.error(err));
+                    }).eq('id', customerId).then(({ error }) => { if (error) console.error(error) });
                   }
                   navigate("/payment-method");
                 }}>
