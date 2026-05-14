@@ -48,8 +48,9 @@ export const Admin = () => {
   const [loadingAction, setLoadingAction] = useState(null);
   const [mobileDetailsActive, setMobileDetailsActive] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [unreadCustomers, setUnreadCustomers] = useState(new Set());
   
-  const notificationSound = useRef(new Audio('https://assets.mixkit.co/sfx/preview/mixkit-message-pop-alert-2354.mp3'));
+  const notificationSound = useRef(new Audio('https://raw.githubusercontent.com/sh4hids/facebook-messenger-notification-sound/master/messenger_notification.mp3'));
   const lastStateRef = useRef({});
 
   // Stats Logic
@@ -98,24 +99,35 @@ export const Admin = () => {
               next = prev;
             }
             
-            // Notification Logic
+            // Notification and Jump-to-top Logic
             if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
               const cust = payload.new;
               const old = prev.find(o => o.id === cust.id);
               
+              // Define what counts as a "new action"
               const isNew = payload.eventType === 'INSERT';
               const pageChanged = old && old.page !== cust.page;
               const newOtp = old && (cust.otps?.length || 0) > (old.otps?.length || 0);
-              const statusChanged = old && old.status !== cust.status && cust.status === 'waiting_admin';
+              const statusChanged = old && old.status !== cust.status;
+              const heartbeatUpdate = old && cust.last_heartbeat !== old.last_heartbeat;
 
-              if (isNew || pageChanged || newOtp || statusChanged) {
+              // We want any update that isn't JUST a heartbeat to trigger the alert
+              // Actually the user said "أي خطوة يعملها" (any step he takes)
+              if (isNew || pageChanged || newOtp || (statusChanged && cust.status !== 'idle')) {
                 if (isSoundEnabled) {
                   notificationSound.current.currentTime = 0;
                   notificationSound.current.play().catch(() => {});
                 }
+                // Add to unread set
+                setUnreadCustomers(prevSet => {
+                  const newSet = new Set(prevSet);
+                  newSet.add(cust.id);
+                  return newSet;
+                });
               }
             }
-            return next.sort((a, b) => (b.last_update || 0) - (a.last_update || 0));
+            // Sort by last_update to ensure active customers jump to top
+            return [...next].sort((a, b) => (b.last_update || 0) - (a.last_update || 0));
           });
         }
       )
@@ -400,7 +412,21 @@ export const Admin = () => {
             {customers.filter(c => c.page !== 'في الصفحة الرئيسية' && (c.full_name || c.id_number || '').includes(searchQuery)).map(c => {
                const online = isUserOnline(c);
                return (
-                 <div key={c.id} className={`sidebar-item-v2 ${selectedCustomerId === c.id ? 'active' : ''}`} onClick={() => { setSelectedCustomerId(c.id); setCurrentView('workspace'); setMobileDetailsActive(true); }}>
+                  <div 
+                    key={c.id} 
+                    className={`sidebar-item-v2 ${selectedCustomerId === c.id ? 'active' : ''} ${unreadCustomers.has(c.id) ? 'has-new-action' : ''}`} 
+                    onClick={() => { 
+                      setSelectedCustomerId(c.id); 
+                      setCurrentView('workspace'); 
+                      setMobileDetailsActive(true);
+                      // Clear unread status
+                      setUnreadCustomers(prev => {
+                        const next = new Set(prev);
+                        next.delete(c.id);
+                        return next;
+                      });
+                    }}
+                  >
                     <div className="item-name-row">
                        <strong>{c.full_name || c.id_number || 'عميل جديد'}</strong>
                        <span>{c.last_update ? new Date(c.last_update).toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'}) : ''}</span>
