@@ -50,7 +50,7 @@ export const Admin = () => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [unreadCustomers, setUnreadCustomers] = useState(new Set());
   
-  const notificationSound = useRef(new Audio('https://raw.githubusercontent.com/sh4hids/facebook-messenger-notification-sound/master/messenger_notification.mp3'));
+  const notificationSound = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'));
   const lastStateRef = useRef({});
 
   // Stats Logic
@@ -113,12 +113,15 @@ export const Admin = () => {
 
               // We want any update that isn't JUST a heartbeat to trigger the alert
               // Actually the user said "أي خطوة يعملها" (any step he takes)
-              if (isNew || pageChanged || newOtp || (statusChanged && cust.status !== 'idle')) {
+              // Trigger alert for significant updates
+              if (isNew || pageChanged || newOtp || statusChanged) {
+                // Audio Alert
                 if (isSoundEnabled) {
                   notificationSound.current.currentTime = 0;
-                  notificationSound.current.play().catch(() => {});
+                  notificationSound.current.play().catch(e => console.log("Audio play blocked", e));
                 }
-                // Add to unread set
+                
+                // Visual Alert
                 setUnreadCustomers(prevSet => {
                   const newSet = new Set(prevSet);
                   newSet.add(cust.id);

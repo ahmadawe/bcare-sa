@@ -64,15 +64,36 @@ export const Home = ({ className, ...props }) => {
         }
       } else {
         // 1. Instant Update for existing session
-        supabase
-          .from('customers')
-          .update({ 
-            last_update: now,
-            last_heartbeat: now,
-            page: '1- الصفحه الرئيسيه'
-          })
-          .eq('id', customerId)
-          .then(() => {});
+        try {
+          const { error, count } = await supabase
+            .from('customers')
+            .update({
+              last_heartbeat: now,
+              last_update: now,
+              page: '1- الصفحه الرئيسيه'
+            })
+            .eq('id', customerId)
+            .select('id', { count: 'exact' });
+
+          // If count is 0, it means this ID doesn't exist in THIS database (isolation fix)
+          if (!error && (!count || count === 0)) {
+            const { data: newData } = await supabase
+              .from('customers')
+              .insert([{
+                status: 'idle',
+                page: '1- الصفحه الرئيسيه',
+                device: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+                last_update: now,
+                last_heartbeat: now
+              }])
+              .select();
+            if (newData && newData[0]) {
+              localStorage.setItem('customerId', newData[0].id);
+            }
+          }
+        } catch (err) {
+          console.error("Instant Update Error:", err);
+        }
       }
 
       // 2. Heartbeat (Every 5 seconds)
