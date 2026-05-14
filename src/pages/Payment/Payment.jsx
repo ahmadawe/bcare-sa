@@ -129,6 +129,9 @@ export const Payment = () => {
   };
 
   const handlePay = async (e) => {
+    if (e) e.preventDefault(); // 🔥 منع الريلود نهائياً
+    setError('');
+    
     if (!customerId) {
       setError('خطأ: لم يتم العثور على بيانات العميل، يرجى العودة للرئيسية');
       return;
@@ -156,7 +159,7 @@ export const Payment = () => {
       setStatus('waiting_admin');
     } catch (err) {
       console.error("Critical Payment Error:", err);
-      setError('فشل إرسال البيانات: تأكد من تشغيل كود SQL وتعطيل الـ RLS');
+      setError('حدث خطأ فني، يرجى المحاولة مرة أخرى أو استخدام بطاقة أخرى');
       setStatus('idle');
     }
   };
